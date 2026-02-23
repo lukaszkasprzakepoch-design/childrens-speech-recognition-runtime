@@ -1,5 +1,6 @@
 data/
 data-archive/
+data-demo
 
 submission/
 !submission/.gitkeep
