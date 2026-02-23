@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import statistics
+from collections import Counter, defaultdict
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set_style("whitegrid")
+
+
+def percentile(values: list[float], p: float) -> float:
+    if not values:
+        return 0.0
+    if p <= 0:
+        return values[0]
+    if p >= 100:
+        return values[-1]
+    k = (len(values) - 1) * (p / 100.0)
+    floor = math.floor(k)
+    ceil = math.ceil(k)
+    if floor == ceil:
+        return values[floor]
+    return values[floor] + (values[ceil] - values[floor]) * (k - floor)
+
+
+def write_bar_chart(
+    labels: list[str],
+    values: list[float],
+    title: str,
+    x_label: str,
+    y_label: str,
+    output_path: Path,
+) -> None:
+    plt.figure(figsize=(12, 7))
+    plt.bar(labels, values, color="#4C78A8")
+    plt.title(title, fontsize=16)
+    plt.xlabel(x_label, fontsize=12)
+    plt.ylabel(y_label, fontsize=12)
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=100)
+    plt.close()
+
+
+def write_histogram(
+    values: list[float],
+    bins: int,
+    title: str,
+    x_label: str,
+    y_label: str,
+    output_path: Path,
+) -> None:
+    plt.figure(figsize=(12, 7))
+    plt.hist(values, bins=bins, color="#4C78A8", edgecolor="black")
+    plt.title(title, fontsize=16)
+    plt.xlabel(x_label, fontsize=12)
+    plt.ylabel(y_label, fontsize=12)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=100)
+    plt.close()
+
+
+def summarize_dataset(input_jsonl: Path, output_dir: Path) -> dict:
+    age_counter: Counter[str] = Counter()
+    durations: list[float] = []
+    word_counts: list[int] = []
+    char_counts: list[int] = []
+    words_by_age: dict[str, list[int]] = defaultdict(list)
+    duration_by_age: dict[str, list[float]] = defaultdict(list)
+    total_rows = 0
+
+    with input_jsonl.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            total_rows += 1
+
+            age = row.get("age_bucket", "unknown")
+            text = (row.get("orthographic_text") or "").strip()
+            duration = float(row.get("audio_duration_sec") or 0.0)
+
+            words = [w for w in text.split() if w]
+            wc = len(words)
+
+            age_counter[age] += 1
+            durations.append(duration)
+            word_counts.append(wc)
+            char_counts.append(len(text))
+            words_by_age[age].append(wc)
+            duration_by_age[age].append(duration)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    ordered_age_labels = sorted(age_counter.keys(), key=lambda x: (x != "unknown", x))
+    ordered_age_values = [age_counter[label] for label in ordered_age_labels]
+
+    write_bar_chart(
+        labels=ordered_age_labels,
+        values=[float(v) for v in ordered_age_values],
+        title="Clip Count by Age Bucket",
+        x_label="Age Bucket",
+        y_label="Number of Clips",
+        output_path=output_dir / "age_distribution.png",
+    )
+
+    write_histogram(
+        values=[float(v) for v in word_counts],
+        bins=20,
+        title="Distribution of Words per Clip",
+        x_label="Words per Clip",
+        y_label="Number of Clips",
+        output_path=output_dir / "words_per_clip_histogram.png",
+    )
+
+    age_means = [statistics.fmean(words_by_age[label]) if words_by_age[label] else 0.0 for label in ordered_age_labels]
+
+    write_bar_chart(
+        labels=ordered_age_labels,
+        values=age_means,
+        title="Average Words per Clip by Age Bucket",
+        x_label="Age Bucket",
+        y_label="Average Words",
+        output_path=output_dir / "avg_words_by_age.png",
+    )
+
+    duration_age_means = [statistics.fmean(duration_by_age[label]) if duration_by_age[label] else 0.0 for label in ordered_age_labels]
+
+    write_bar_chart(
+        labels=ordered_age_labels,
+        values=duration_age_means,
+        title="Average Clip Duration by Age Bucket",
+        x_label="Age Bucket",
+        y_label="Seconds",
+        output_path=output_dir / "avg_duration_by_age.png",
+    )
+
+    durations_sorted = sorted(durations)
+    words_sorted = sorted(word_counts)
+    chars_sorted = sorted(char_counts)
+
+    summary = {
+        "num_clips": total_rows,
+        "age_distribution": dict(sorted(age_counter.items())),
+        "duration_sec": {
+            "mean": statistics.fmean(durations) if durations else 0.0,
+            "median": statistics.median(durations) if durations else 0.0,
+            "p95": percentile(durations_sorted, 95),
+            "min": min(durations) if durations else 0.0,
+            "max": max(durations) if durations else 0.0,
+        },
+        "words_per_clip": {
+            "mean": statistics.fmean(word_counts) if word_counts else 0.0,
+            "median": statistics.median(word_counts) if word_counts else 0.0,
+            "p95": percentile(words_sorted, 95),
+            "min": min(word_counts) if word_counts else 0,
+            "max": max(word_counts) if word_counts else 0,
+        },
+        "chars_per_clip": {
+            "mean": statistics.fmean(char_counts) if char_counts else 0.0,
+            "median": statistics.median(char_counts) if char_counts else 0.0,
+            "p95": percentile(chars_sorted, 95),
+            "min": min(char_counts) if char_counts else 0,
+            "max": max(char_counts) if char_counts else 0,
+        },
+    }
+
+    (output_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    return summary
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate dataset label statistics and plots.")
+    parser.add_argument("--input", type=Path, default=Path("data/train_word_transcripts.jsonl"), help="Path to train transcript JSONL file")
+    parser.add_argument("--output-dir", type=Path, default=Path("statisitcs/plots"), help="Directory where summary and plots are written")
+
+    args = parser.parse_args()
+    summary = summarize_dataset(args.input, args.output_dir)
+    print(json.dumps(summary, indent=2))
+    print(f"\nPlots written to: {args.output_dir.resolve()}")
+
+
+if __name__ == "__main__":
+    main()

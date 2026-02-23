@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="700" viewBox="0 0 1100 700">
+<rect width="100%" height="100%" fill="white"/>
+<text x="550.0" y="38" text-anchor="middle" font-size="28" font-family="Arial">Clip Count by Age Bucket</text>
+<line x1="90" y1="560" x2="1060" y2="560" stroke="black"/>
+<line x1="90" y1="80" x2="90" y2="560" stroke="black"/>
+<line x1="84" y1="560.00" x2="90" y2="560.00" stroke="black"/>
+<line x1="90" y1="560.00" x2="1060" y2="560.00" stroke="#dddddd"/>
+<text x="78" y="565.00" text-anchor="end" font-size="13" font-family="Arial">0.0</text>
+<line x1="84" y1="464.00" x2="90" y2="464.00" stroke="black"/>
+<line x1="90" y1="464.00" x2="1060" y2="464.00" stroke="#dddddd"/>
+<text x="78" y="469.00" text-anchor="end" font-size="13" font-family="Arial">14794.0</text>
+<line x1="84" y1="368.00" x2="90" y2="368.00" stroke="black"/>
+<line x1="90" y1="368.00" x2="1060" y2="368.00" stroke="#dddddd"/>
+<text x="78" y="373.00" text-anchor="end" font-size="13" font-family="Arial">29588.0</text>
+<line x1="84" y1="272.00" x2="90" y2="272.00" stroke="black"/>
+<line x1="90" y1="272.00" x2="1060" y2="272.00" stroke="#dddddd"/>
+<text x="78" y="277.00" text-anchor="end" font-size="13" font-family="Arial">44382.0</text>
+<line x1="84" y1="176.00" x2="90" y2="176.00" stroke="black"/>
+<line x1="90" y1="176.00" x2="1060" y2="176.00" stroke="#dddddd"/>
+<text x="78" y="181.00" text-anchor="end" font-size="13" font-family="Arial">59176.0</text>
+<line x1="84" y1="80.00" x2="90" y2="80.00" stroke="black"/>
+<line x1="90" y1="80.00" x2="1060" y2="80.00" stroke="#dddddd"/>
+<text x="78" y="85.00" text-anchor="end" font-size="13" font-family="Arial">73970.0</text>
+<rect x="138.50" y="494.38" width="226.33" height="65.62" fill="#4C78A8"/>
+<text x="251.67" y="486.38" text-anchor="middle" font-size="13" font-family="Arial">10112</text>
+<text x="251.67" y="584.00" text-anchor="middle" font-size="13" font-family="Arial">3-4</text>
+<rect x="461.83" y="485.44" width="226.33" height="74.56" fill="#4C78A8"/>
+<text x="575.00" y="477.44" text-anchor="middle" font-size="13" font-family="Arial">11490</text>
+<text x="575.00" y="584.00" text-anchor="middle" font-size="13" font-family="Arial">5-7</text>
+<rect x="785.17" y="80.00" width="226.33" height="480.00" fill="#4C78A8"/>
+<text x="898.33" y="72.00" text-anchor="middle" font-size="13" font-family="Arial">73970</text>
+<text x="898.33" y="584.00" text-anchor="middle" font-size="13" font-family="Arial">8-11</text>
+<text x="575.0" y="655" text-anchor="middle" font-size="16" font-family="Arial">Age Bucket</text>
+<text x="28" y="320.0" text-anchor="middle" transform="rotate(-90 28 320.0)" font-size="16" font-family="Arial">Number of Clips</text>
+</svg>
